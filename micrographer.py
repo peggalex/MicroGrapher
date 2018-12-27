@@ -1,5 +1,7 @@
 import re, turtle, sympy
 
+X,Y,M = sympy.symbols('x y m',nonnegative=True)
+
 class Operators:
     _precedence = 0
     _function = lambda x,y: None
@@ -66,14 +68,14 @@ class Exponent(Operators):
     _isLeftAssociative = False
 
 
-Operators = (Add(),Subtract(),Multiply(),Divide(),Exponent())
+Operators = (Add,Subtract,Multiply,Divide,Exponent)
 #global constant
 class OperatorHandlers:
     
     def getOperator(c: 'char'):
         for operator in Operators:
-            if operator.checkString(c):
-                return operator
+            if operator().checkString(c):
+                return operator()
             
         return None
 
@@ -139,7 +141,7 @@ _operandRegexS = digitRegex.strip(")")+"|({}?".format(digitRegex)+"({}))+))"
 
 operatorRegexS = "("
 for operator in Operators:
-    for c in operator.getString():
+    for c in operator().getString():
         operatorRegexS += "{}|".format("\\"+c)
 operatorRegexS = operatorRegexS.strip("|")
 operatorRegexS += ")"
@@ -375,7 +377,7 @@ def buildTree(output: list)->ItsTreesonThen:
     value = output.pop()
     tree = ItsTreesonThen(value)
     
-    if not all(type(value)!=type(o) for o in Operators):
+    if any(type(value)==o for o in Operators):
         right = buildTree(output)
         left = buildTree(output) #note, theyre using the same output object that is getting popped
         tree.setLeft(left)
@@ -387,7 +389,7 @@ def getExp(tree):
     if not tree:
         return
     
-    variables = {c:sympy.symbols(c) for c in 'xyz'}
+    variables = {'x': X, 'y':Y}
 
     def preorder(node):
         if node.getLeft():
@@ -398,7 +400,7 @@ def getExp(tree):
             
         else:
             v = node.getValue()
-            if str(v) in 'xyz':
+            if str(v) in 'xy':
                 return variables[v]
             else:
                 assert(type(v)==int or type(v)==float)
@@ -411,65 +413,163 @@ class Bundle:
     def __init__(self,exp, px, py, m):
         self.exp = exp
         self.px, self.py, self.m = px, py, m
-        self.tanCond = None
+        self.tanCond = {'exp':None,'indiVar':''}
         self.bundle = self.getBundle()
         self.uCurve = Bundle.getUtility(self.bundle,self.exp)
 
     def getBundle(self):
         exp,px,py,m = self.exp, self.px, self.py, self.m
-        x,y = sympy.symbols('x y')
-        bl = (x*px+y*py-m).evalf()
+        bl = (X*px+Y*py-m).evalf()
 
-        mux,muy = sympy.diff(exp,x), sympy.diff(exp,y)
-        isFunctionXY = lambda f: any("Symbol('{}')".format(v) in sympy.srepr(f) for v in ('x','y'))
+        mux,muy = sympy.diff(exp,X), sympy.diff(exp,Y)
+        isFunctionXY = lambda f: any("Symbol('{}', nonnegative=True)".format(v) in sympy.srepr(f) for v in ('x','y'))
 
+        bundles = [(m/px,0),(0,m/py)]
+        tanBundle = None
+        independentSub = None
+        independent = None
+        
         #if we can solve with tan mrs=pRatio:
         if isFunctionXY(mux) or isFunctionXY(muy):
+            
+            mrs = sympy.simplify(sympy.diff(exp,X)/sympy.diff(exp,Y))
+            pRatio = px/py
+            tanCond = (mrs-pRatio).evalf()
+
+            independent = X if isFunctionXY(mux) else Y
+            dependent =  Y if independent==X else X
+            independentSub = sympy.solve(tanCond,independent)[0]
+            
             print("\tmux = {}".format(mux))
             print("\tmuy = {}".format(muy))
-        
-            mrs = sympy.simplify(sympy.diff(exp,x)/sympy.diff(exp,y))
             print('\tMRS: {}'.format(mrs))
-        
-            pRatio = px/py
-            print('\tprice ratio: {}'.format(pRatio))
+            print('\tprice ratio: {:.3f}'.format(pRatio))
+            print('\tTangency condition: {} = {}'.format(str(independent),independentSub))
 
-            if isFunctionXY(mux):
-                self.tanCond = (sympy.solve(mrs-pRatio,x)[0]-x).evalf()
-            else:
-                self.tanCond = (sympy.solve(mrs-pRatio,y)[0]-y).evalf()
-            print('\ttangency condition [MRS = price ratio] => {} = 0'.format(tanCond))              
-
-            sysOfEq = [tanCond, bl]
-            A,b = sympy.linear_eq_to_matrix(sysOfEq, x, y)
+            for var in (dependent,independent):
+                var = sympy.symbols(str(var),positive=True)
             
-            assert(tuple(sympy.linsolve((A,b), [x,y])))
-            bundleA = tuple(sympy.linsolve((A,b), [x,y]))[0]
-            print('substitute in => (x,y) = {}'.format(bundleA))
-        else:
-            maxU = lambda t: exp.evalf(subs={x:t[0],y:t[1]})
-            bundleA = max( ((m/px,0),(0,m/py)) , key=maxU)
-            print('substitute in => (x,y) = {}'.format(bundleA))
+            bundle = {X:None,Y:None}
+            
+            bundle[dependent] = sympy.solve(bl.subs(independent,\
+                                    independentSub), dependent)[0]
+            
+            bundle[independent] = sympy.solve(bl.subs(dependent,\
+                                    bundle[dependent]),independent)[0]
+            
+            tanBundle = ((bundle[X],bundle[Y]))
+            bundles.append(tanBundle)
 
-            self.tanCond = None
-             
-        return bundleA
+        maxU = lambda t: exp.evalf(subs={X:t[0],Y:t[1]})
+        maxBundle = max(bundles, key=maxU)
+        self.bundle = maxBundle
+        print('substitute in =>  (x,y) = {}'.format(Bundle.getShortTupStr(maxBundle)))
+
+
+        def _setTanCond():
+            if maxBundle == tanBundle:
+                self.tanCond['exp'] = independentSub
+                self.tanCond['indiVar'] = independent
+
+            elif maxBundle == (self.m/self.px,0):
+                self.tanCond['exp'] = 0
+                self.tanCond['indiVar'] = Y
+
+            else:
+                assert(maxBundle == (0,self.m/self.py))
+                self.tanCond['exp'] = 0
+                self.tanCond['indiVar'] = X
+
+
+        _setTanCond()
+        return maxBundle
 
     #@global
     def getUtility(tup: tuple, exp):
-        u = exp.evalf(subs={x:tup[0],y:tup[1]})
+        u = exp.evalf(subs={X:tup[0],Y:tup[1]})
         return (exp-u).evalf()
 
+    def getBL(self):
+        return sympy.evalf(self.px*X+self.py*Y-m)
 
-class BundleSE(bundle):
+    #@global
+    def getShortTupStr(tup:tuple):
+        tup = list(tup)
+        for i in range(len(tup)):
+            if type(tup[i]) == sympy.S.Zero:
+                tup[i] = 0
+        return '({:.3f}, {:.3f})'.format(tup[0],tup[1])
+            
 
-    def __init__(self, exp, uCurve,px,py):
-        self.exp = exp
-        self.uCurve = uCurve
-        self.px, self.py = px, py
 
-    def getCurveShift(self)
-        self.uCurve 
+class BundleSE(Bundle):
+
+    def __init__(self, exp, px, py, bundleO, tanCond):
+        self.bundleO, self.tanCond = bundleO, tanCond
+        self.exp,self.px,self.py = exp,px,py
+        
+        self.blHicks = None #hicksian income
+        self.bundleHicks = None
+        self.hicksCurve = self.getHicksCurve()
+        
+        self.blSluts = None #slutsky income
+        self.bundleSluts = None
+        self.slutsCurve = self.getSlutsCurve()
+
+    def getHicksCurve(self):
+        tanCond = self.tanCond
+        uCurve = Bundle.getUtility(self.bundleO,exp)
+        independent = X if tanCond['indiVar']==X else Y
+        dependent =  Y if independent==X else X
+
+        bundleSE = {X:None,Y:None}
+        
+        bundleSE[dependent] = sympy.solve(uCurve.subs(independent,\
+                                tanCond["exp"]),dependent)[0]
+
+        print('dependent: {}={}'.format(dependent,bundleSE[dependent]))
+        
+        bundleSE[independent] = sympy.solve(uCurve.subs(dependent,\
+                                bundleSE[dependent]),independent)[0]
+
+        self.bundleHicks = ((bundleSE[X],bundleSE[Y]))
+        self.blHicks = self.get_bl(self.bundleHicks)
+
+        print('Hicksian SE =>  (x,y) = {}'.format(Bundle.getShortTupStr(self.bundleHicks)))
+
+
+        return uCurve
+
+
+    def getSlutsCurve(self):
+        tanCond = self.tanCond
+        independent = X if tanCond['indiVar']==X else Y
+        dependent =  Y if independent==X else X
+
+        self.blSluts = self.get_bl(self.bundleO)
+
+        bundleSE = {X:None,Y:None}
+
+        bundleSE[dependent] = sympy.solve(self.blSluts.subs(independent,\
+                                tanCond['exp']), dependent)[0]
+        
+        bundleSE[independent] = sympy.solve(self.blSluts.subs(dependent,\
+                                bundleSE[dependent]),independent)[0]
+
+        self.bundleSluts = ((bundleSE[X],bundleSE[Y]))
+
+        print('Slutsky SE =>  (x,y) = {}'.format(Bundle.getShortTupStr(self.bundleSluts)))
+
+        return Bundle.getUtility(self.bundleSluts,exp)
+                    
+
+    def get_bl(self, bundleSE):
+        px,py = self.px,self.py
+        m = sympy.solve((px*bundleSE[0]+py*bundleSE[1]-M).evalf(),M)[0]
+        return (px*X+py*Y-m).evalf()
+
+        
+        
     
         
 
@@ -487,7 +587,7 @@ while(True):
         #continuing just the nested for-loop
 
     '''
-    variablesS = "xyz"
+    variablesS = "xy"
     variables = ""
     for c in variablesS:
         variables+=c+"|"
@@ -510,7 +610,7 @@ while(True):
             if re.fullmatch(checkNum,var):
                 dic[k]['var']  = float(var)
                 break
-    px,py,m = dic['px']['var'],dic['py']['var'],dic['m']['var']
+    px,px2,py,m = (dic[e]['var'] for e in ('px','px2','py','m'))
 
         
     if equation == "quit":
@@ -529,6 +629,8 @@ while(True):
 
         bundleA = Bundle(exp,px,py,m)
         bundleC = Bundle(exp,px2,py,m)
+        bundleB = BundleSE(exp,px2,py,bundleA.bundle,bundleC.tanCond)
+        break
         
         '''
         bundleA = []
