@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Micrographer</title>
+    <script src="https://www.desmos.com/api/v1.3/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/> <!-- firefox throws an error without this -->
+
+    <link rel="stylesheet" type="text/css" href="../static/index_css.css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans+HK&display=swap" rel="stylesheet">
+  </head>
+
+<body>
+
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="toggle()">×</a>
+    <br>
+      <form id="myForm" method="POST">
+        <h4>utility function</h4>
+        <input type="text" class="u" placeholder="utility func" autofocus required/>
+        <h4>px</h4>
+        <input type="text" class="px_1" placeholder="px period 1" required/>
+        <h4>px'</h4>
+        <input type="text" class="px_2" placeholder="px period 2" required/>
+        <h4>py</h4>
+        <input type="text" class="py" placeholder="py" required/>
+        <h4>income</h4>
+        <input type="number" class="m" placeholder="income" required/>
+        <br><br>
+        <label><input type="checkbox" id="enableAnimations" value="false"/>enable animations?</label>
+        <br>
+        <label><input type="checkbox" id="isDecimal" value="true"/>force decimal values?</label>
+        <br>
+        <br>
+        <input type="submit" id="submitButton" value="graph"/>
+      </form>
+  </div>
+
+
+  <div id="sidebarDiv">
+
+    <div id="top">
+      <div id="topBar">
+      	<button class="openbtn" onclick="toggle()">☰</button>
+        <div id="title">
+        	<h1 style="margin:0;">Indifference curve <span style="color:#add8e6;">analysis</span></h1>
+       	</div>
+      </div>
+       <div id="topRightButtons">
+      	 <button id="demandCurveButton" onclick="openDemandCurve()">demand curves</button>
+  	  </div>
+    </div>
+
+    <div id="nonHeader">
+
+      <div id="calcDiv">
+        <div id="calculator" style="height:100%"></div>
+        <!-- hardcode the height in here, instead of in css
+        	otherwise css will give it an automatic height of
+          2px for some reason-->
+      </div>
+
+      <div id="infoDiv">
+        <div id="tabButtons"></div>
+        <div id="home-content" class="tabContent">
+          <div id=functionLabel></div>
+          <div id="bundleTable"></div>
+          <!--<div class="functionKeys"></div>-->
+        </div>
+        <div id="a-content" class="tabContent"></div>
+        <div id="b-content" class="tabContent"></div>
+        <div id="c-content" class="tabContent"></div>
+        <div id="d-content" class="tabContent"></div>
+        <div id="e-content" class="tabContent"></div>
+
+      </div>  
+    </div>
+
+  </div>
+
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+<script src="../static/index_js.js"></script>
+<!--<link href="https://fonts.googleapis.com/css?family=Questrial&display=swap" rel="stylesheet">-->
+
+<script type="text/x-mathjax-config">
+	MathJax.Hub.Config({
+		showMathMenu: false
+	});
+</script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+</html>

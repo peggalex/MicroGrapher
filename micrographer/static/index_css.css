@@ -1,0 +1,254 @@
+      * {
+        box-sizing: border-box;
+      }
+
+      .sidebar {
+        flex-shrink: 0;
+        width: 0;
+        background-color: #FFFFFF;
+        overflow-x: hidden;
+        transition: 0.5s;
+        border-right: 1px solid;
+        border-color: #add8e6;
+      }
+
+      .sidebar a {
+        float:right;
+        margin-right:5%;
+        text-decoration: none;
+        font-size: 34px;
+        color: #818181;
+        display: block;
+        transition: 0.3s;
+      }
+
+      .sidebar a:hover {
+        color: #f1f1f1;
+      }
+
+      .openbtn {
+        font-size: 20px;
+        cursor: pointer;
+        background-color: #FFFFFF;
+        color: black;
+        padding: 0px 10px;
+        border: none;
+      }
+
+      .openbtn:hover {
+        background-color: #FFFFFF;
+        color: #f1f1f1;
+      }
+
+      #sidebarDiv {
+      	display:flex;
+      	flex-direction:column;
+      	min-height: 0;
+      	height: 100%;
+        padding: 0px;
+        flex-grow: 1;
+      }
+
+      /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+      @media screen and (max-height: 450px) {
+        .sidebar {padding-top: 15px;}
+        .sidebar a {font-size: 18px;}
+      }
+
+	  html, body {
+	     height: 100vh;
+	  }
+
+      body {
+      	background-color: white;
+      	margin: 0;
+        margin-right: 10px;
+        font-family: 'Lato', sans-serif;
+        overflow: hidden;
+        display: flex;
+        flex-direction: row;
+      }
+
+      h1 {font-family: 'Raleway', sans-serif;}
+
+      h3 {text-align: center;}
+
+      h4 {font-size: 14px;}
+
+      #top {
+      	padding: 10px 0px;
+      	display: flex;
+      	flex-direction: row;
+      	flex-shrink: 1;
+      	border-bottom: 1px solid;
+      	border-color: #d3d3d3;
+      }
+
+      #topBar {
+        align-self: left;
+        display: flex;
+        flex-direction: row;
+        transition: margin-left .5s;
+      }
+
+      #title {
+      	display: flex;
+      	flex-direction: column;
+      	justify-content: center;
+      	white-space: nowrap;
+      }
+
+      #topRightButtons {
+      	display: flex;
+      	flex-direction: column;
+      	margin-left: auto;
+      	justify-content: center;
+      }
+
+
+      #topRightButtons *{
+      	white-space: nowrap;
+      }
+
+      .tabSpace {
+        padding-left: 1em;
+      }
+
+      #nonHeader{
+      	display: flex;
+      	flex-direction: row;
+      	flex-grow: 1;
+      	flex-shrink: 1;
+        min-height: 0;
+      }
+
+      #calcDiv {
+        flex-grow: 1;
+        padding: 2.5%;
+      }
+
+      #infoDiv{
+      	/*width: 350px;*/
+      	padding: 10px 0px;
+      	display:flex;
+      	flex-direction: column;
+      	align-items: center;
+      	overflow: scroll;
+      }
+
+
+      input[type=text], input[type=number] {
+        padding: 10px;
+        box-sizing: border-box;
+      }
+
+      button {
+        text-shadow: none;
+        transition: .5s;
+        background-color: #add8e6;
+        border: none;
+        margin-left: 2px;
+        font-family: 'Lato', sans-serif;
+        font-size:150%;    
+        cursor: pointer;
+
+      }
+
+      table {
+        font-family: 'Noto Sans HK', sans-serif;
+      }
+
+      th {
+        font-size: 120%;
+        font-family: 'Lato', sans-serif;
+      }
+
+      #mySidebar input[type=text], input[type=number], input[type=submit] {
+        width:80%;
+      }
+
+      button:focus { outline:0; }
+      button:hover { background-color: #deeff5; }
+
+      input[type=submit] {
+        transition: .5s;
+        text-shadow: none;
+        background-color: #add8e6;
+        border: none;
+        outline: none;
+        font-family: 'Lato', sans-serif;
+        font-size:130%;
+        cursor: pointer;
+      }
+
+      #mySidebar h4 {
+        margin: 15px 10px;
+      }
+
+
+      #submitButton:hover {
+        background-color: #deeff5;
+      }
+
+      #submitButton:focus{ outline:0; }
+
+      .disableAnimations{ margin-left: 20px; }
+
+      /*.tabContent { display: none; }*/
+      .tabContent {
+        height: 0;
+        overflow: hidden;
+      }
+
+      /*.tabContent.tabActive { display: inline; }*/
+      .tabContent.tabActive {
+        height: 100%;
+      }
+
+      #tabButtons {
+        display:flex;
+        flex-direction:row;
+        justify-content: center;
+        align-items: flex-end;
+        align-content:space-around;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      button.selected { background-color: #deeff5; }
+
+      #mySidebar *:not(label){
+      	margin-left: 5%;
+      	white-space: nowrap;
+      }
+
+      #demandCurveButton {
+      	background-color: #f4e9ed;
+      	margin-bottom: auto;
+      }
+      
+      #demandCurveButton:hover{ background-color: #fbf6f8; }
+
+      .loader {
+		  border: 5px solid #f3f3f3;
+		  border-top: 5px solid #add8e6; 
+		  border-radius: 50%;
+		  width: 50px;
+		  height: 50px;
+		  animation: spin 1s linear infinite;
+	  }
+
+    .loaderContainer {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+
+	  @keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	  }

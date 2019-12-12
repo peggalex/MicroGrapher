@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Demand Curve</title>
+    <script src="https://www.desmos.com/api/v1.3/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+      html, body {
+         height: 100vh;
+      }
+
+      body {
+        /*font-family: 'Noto Sans HK', sans-serif;*/
+        font-family: 'Lato', sans-serif;
+        overflow: hidden
+      }
+
+      h1 {font-family: 'Raleway', sans-serif;}
+
+      h4 {font-size: 14px;}
+
+      input[type=text],input[type=number] {
+        box-sizing: border-box;
+        width: 150px;
+      }
+
+     input[type=submit] {
+        transition: .5s;
+        text-shadow: none;
+        background-color: #f4e9ed;
+        border: none;
+        outline: none;
+        font-family: 'Lato', sans-serif;
+        font-size:200%
+      }
+
+      input[type=text],input[type=number]:focus {
+        outline: 0;
+      }
+
+      #everything{
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /*
+      #everything *{
+        overflow: hidden;
+      }
+      */
+
+      #formDiv {
+        display:flex;
+        flex-direction:row;
+        justify-content: center;
+        align-items: flex-end;
+        align-content:space-around;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 0;
+        margin-right: 0;
+        overflow: scroll;
+
+        padding-bottom: 10px;
+        border-bottom: 1px solid;
+        border-color: #d3d3d3;
+      }
+
+      #formDiv *{
+        padding: 12px 20px;
+        margin-left: 10px;
+        float:left;
+        font-size: 14px;
+        font-family: 'Raleway', sans-serif; 
+      }
+
+      #submitButton:hover {
+        background-color: #fbf6f8
+      }
+
+      #submitButton:focus {
+        outline: 0;
+      }
+
+      #under{
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+      }
+
+      #calcContainer{
+        display:flex;
+        flex-grow: 1;
+        height: 100%;
+        align-self: center;
+        justify-content: center;
+      }
+
+      #functionsBar{
+        font-size: 12px;
+        text-align: center;
+        flex-shrink: 0;
+        min-width: auto;
+      }
+
+      #loaderContainer{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+      }
+
+      .loader {
+        border: 5px solid #f3f3f3; 
+        border-top: 5px solid #f4e9ed; 
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Questrial&display=swap" rel="stylesheet">
+  </head>
+
+<body>
+  <div id="everything">
+    <div id="over" style='padding-bottom: 10px'>
+      <form action="" method="POST">
+          <div id="formDiv">
+            <input type="text" class="f" placeholder="utility" required/>
+            <input type="number" class="py" placeholder="py" required/>
+            <input type="number" class="m" placeholder="income" required/>
+            <input type="submit" id="submitButton" value="graph"/>
+          </div>
+      </form>
+    </div>
+    <div id="under">
+      <div id='calcContainer'>
+        <div id="calculator"></div>
+      </div>
+      <div id="functionsBar"></div>
+    </div>
+  </div>
+
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+<!--
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({TeX: {extensions:['color.js']}});
+</script>
+-->
+<script>
+
+  getColorFromInt = function(i){
+    //precond: 255*6 > i >= 0
+    i = parseInt(i)%(128*6)
+    rgb = [100,100,100]
+    index = Math.floor(i/(2*128))
+    indexNext = (index==2) ? 0 : index+1
+    
+    if (Math.floor(i/128)%2==1){
+        rgb[index] = 255-(i%128)
+        rgb[indexNext] = 255
+    } else {
+        rgb[index] = 255
+        rgb[indexNext] = 127+(i%128)
+    }
+    return rgb
+  }
+
+  rgbToHex = function(rgbLst){
+    //better than the complicated solutions available online
+    ret = '#'
+    rgbLst.forEach((c)=>ret += c<16 ? '0'+c.toString(16) : c.toString(16))
+    return ret
+  }
+
+  getNumColors = function(numColors) {
+    let i = Math.random()*(128*6),
+        colors = [],
+        color
+
+    for (let k=0; k<numColors; k++){
+      color = (getColorFromInt(i+k*(128*6)/numColors))
+      console.log(color)
+      colors.push(rgbToHex(color))
+    }
+    return colors
+  }
+
+</script>
+
+<script>
+
+  var socket = io.connect('http://' + document.domain + ':' + location.port),
+      calculator,
+      m,
+      py
+
+  handleLoading = function(){
+    if (calculator!=null) {calculator.destroy(); calculator=null;}
+    let s ='<div id="loaderContainer">'+'<div class="loader">'+'</div>'+'</div>'
+    document.getElementById('calculator').innerHTML = s
+    document.getElementById('functionsBar').innerHTML = ''
+  }
+
+  setupCalc = function(json){
+    elt = document.getElementById('calculator')
+    if (calculator!=null) {calculator.destroy(); calculator=null;}
+    document.getElementById('calculator').innerHTML = ''
+    elt.style.display = 'none' //invis until resize trigger
+
+    calculator = Desmos.GraphingCalculator(elt, {
+      expressions:false,
+      settingsMenu:false,
+      zoomButtons:true,
+      yAxisLabel: 'price x',
+      xAxisLabel: 'x quantity'
+    })
+    let padding = 0.2,
+      axis_length = json.axis_max!=null ? parseFloat(json.axis_max)*(1+padding) : m*2/py
+
+    calculator.setMathBounds({
+      left: -axis_length*0.01,
+      right: axis_length,
+      bottom: -axis_length*0.01,
+      top: axis_length
+    })
+    calculator.setDefaultState(calculator.getState()); //set home button to current view
+  }
+
+  setupExpr = function(json){
+    let colors = getNumColors(json.latexs.length)
+    let funcBarStr = '<h3>\\(' + 'D_x(x) = \\left\\{\\begin{array}{lr} '
+
+    formatStr = (d,color) => d['func']+': & \\color{'+color+'}{'+d['cond']+'}'
+
+    for (let i=0; i<json.latexs.length;i++){
+      funcBarStr+=formatStr(json.latexs[i][1],colors[i])
+      if (i<json.latexs.length-1){ funcBarStr+='\\\\ '} //javascript doesn't have strip like python
+      calculator.setExpression({latex: json.latexs[i][0], color: colors[i]})
+    }
+    funcBarStr+='\\end{array} \\right.' + '\\)</h3>'
+    document.getElementById('functionsBar').innerHTML = funcBarStr
+    console.log(document.getElementById('functionsBar').innerHTML)
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+  }
+
+  resizeHandler = function(){
+    let height = $('body').width()-$('#functionsBar').outerWidth(true),
+      width = $('body').height()-$('#over').outerHeight(true),
+      dim = Math.min(height,width)-20;
+
+    $('#calculator').width(dim)
+    $('#calculator').height(dim)
+    $('#calculator').css('display','block')
+    //maintain a square calculator
+  }
+
+  socket.on('connect', function() {
+    var form = $('form' ).on( 'submit', function(e) {
+      e.preventDefault()
+      let json = {}
+      keys = ['f','py','m']
+      keys.forEach((k)=>json[k]=$('input.'+k).val())
+
+      let invalidChars = ['<','>','{','}',';']
+
+      let someInvalidChars = Object.values(json).some((input)=>{
+        return invalidChars.some((char)=>(input.indexOf(char)>-1))
+      })
+
+      if (someInvalidChars){
+        alert('Pathological input including characters "<", ">", "{", "}" or ";".')
+        throw "bad input"
+      }
+
+      m = parseInt($('input.m').val())
+      py = parseInt($('input.py').val())
+
+      handleLoading()
+      socket.emit('demandCurve', json)
+    })
+  })
+
+  socket.on('displayDemand', function(json) {
+    if (json==null){
+      document.getElementById('calculator').innerHTML = ''
+      alert("error: couldn't solve (sors) check utility function is valid")
+      return
+    }
+
+    setupCalc(json)
+    setupExpr(json)
+
+    //resize callback to maintain square shape (responsive square)
+    $(window).on('resize',resizeHandler)
+
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,()=>$(window).trigger('resize')]);
+    //put the resize on the queue because the resize uses the size of functionsBar
+    // to compute the new size of the calculator
+    // and the true size of functionsBar is when MathJax has rendered the latex
+
+  })
+</script>
+
+</html>
