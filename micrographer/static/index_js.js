@@ -7,25 +7,34 @@ function toggle(){
   } else {
     openNav()
   }
+  isOpen = !isOpen
 }
 
 function openNav() {
-  $("#mySidebar").width("210px");
-  isOpen = true
+  $("#mySidebar").addClass('open');
 }
 
 function closeNav() {
-  $("#mySidebar").width("0");
-  isOpen = false
+  $("#mySidebar").removeClass('open');
 }
 
 openNav()
 
 
 var win = null;
+
 function openDemandCurve(){
-  win = window.open('./demandCurve/','popUpWindow',
+  win = window.open('./micrographer/demandCurve/','popUpWindow',
     'height=600,width=640,left=100,top=100,resizable=yes,'+
+    'scrollbars=yes,toolbar=yes,menubar=no,location=no,'+
+    'directories=no, status=yes')
+  win.focus(); //if a window is already open, open will not focus nor open a new version.
+  //this is the workaround, courtesy of stackoverflow
+}
+
+function openHelp(){
+  win = window.open('./micrographer/help/','popUpWindow',
+    'height=600,width=800,left=100,top=100,resizable=yes,'+
     'scrollbars=yes,toolbar=yes,menubar=no,location=no,'+
     'directories=no, status=yes')
   win.focus(); //if a window is already open, open will not focus nor open a new version.
@@ -47,7 +56,8 @@ var width = 1,
     msg = null,
     allExpressions = null;
 
-  const socket = io.connect('http://' + document.domain + ':' + location.port),
+  const socket = io.connect('https://' + document.domain),
+
     bundleNames = ['a','b','c','d','e'],
     bundleNamesDic = {
       'a':'A',
@@ -454,7 +464,7 @@ setInfoDiv = function() {
     }
 
     str+='<h3 style="font-size:90%;">'
-    str+='\\(p_x:'+px_1+'\\rightarrow'+px_2+'\\)'
+    str+='\\(p_x:'+px_1+'\\rightarrow '+px_2+'\\)'
     str+='<span class=tabSpace>\\(p_y='+py+'\\)</span>'
     str+='<span class=tabSpace>\\(m='+m+'\\)</span>'
     str+='</h3>'
@@ -498,7 +508,7 @@ setInfoDiv = function() {
     return str+'</table>'
   }
 
-	  $("#infoDiv").width("auto");
+	$("#infoDiv").width("auto");
   document.getElementById('tabButtons').innerHTML = '<br><br>'
   document.getElementById('functionLabel').innerHTML = _getFuncLabelStr()
   document.getElementById('bundleTable').innerHTML = _getTableStr()
@@ -607,7 +617,7 @@ socket.on('displayGraphs', function(json) {
     if (msg.error == 1){
       errorMsg = 'Invalid input, click here for input formatting.'
     } else if (msg.error == -1){
-      errorMsg = 'Could not solve (sorry). This has been logged to be fixed later.'
+      errorMsg = 'Could not solve (sorry). You may have chosen too complex a function. If you believe this is an error, please send a message in help.'
     }
     document.getElementById('calculator').innerHTML = ''
     alert(errorMsg)

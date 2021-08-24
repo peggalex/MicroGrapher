@@ -16,18 +16,21 @@
 
   <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="toggle()">×</a>
-    <br>
-      <form id="myForm" method="POST">
+    <div id='helpContainer'>
+    	<button id='helpbtn' onclick="openHelp()">?</button>
+    	<p> help </p>
+    </div>
+    <form id="myForm" method="POST">
         <h4>utility function</h4>
         <input type="text" class="u" placeholder="utility func" autofocus required/>
         <h4>px</h4>
-        <input type="text" class="px_1" placeholder="px period 1" required/>
+        <input type="text" class="px_1" placeholder="px period 1" pattern="[xy\d.*/^+-]+" required/>
         <h4>px'</h4>
-        <input type="text" class="px_2" placeholder="px period 2" required/>
+        <input type="text" class="px_2" placeholder="px period 2" pattern="[xy\d.*/^+-]+" required/>
         <h4>py</h4>
-        <input type="text" class="py" placeholder="py" required/>
+        <input type="text" class="py" placeholder="py" pattern="[xy\d.*/^+-]+" required/>
         <h4>income</h4>
-        <input type="number" class="m" placeholder="income" required/>
+        <input type="number" step="any" class="m" placeholder="income" min="0" required/>
         <br><br>
         <label><input type="checkbox" id="enableAnimations" value="false"/>enable animations?</label>
         <br>
@@ -35,6 +38,7 @@
         <br>
         <br>
         <input type="submit" id="submitButton" value="graph"/>
+        <p style='font-size: 0.75em'> This app does not collect any data. </p>
       </form>
   </div>
 

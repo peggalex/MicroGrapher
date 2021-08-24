@@ -1,10 +1,11 @@
 import traceback
-from logging import *
+import logging as notFlaskLogging
 from flask import *
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 from micrographer import run
 from demandCurveGen import getDemandCurve
 
+#notFlaskLogging.basicConfig(level=notFlaskLogging.DEBUG)
 app = Flask(__name__)
 socketio = SocketIO(app)
 app.config['SECRET_KEY'] = 'jsdhjshjk837944789378923798$*(&#*&(#'
@@ -13,9 +14,12 @@ app.config['SECRET_KEY'] = 'jsdhjshjk837944789378923798$*(&#*&(#'
 # (thank you)
 
 @app.route('/demandCurve/')
-def render_static():
+def render_demandCurve():
     return render_template('demandCurve.html')
 
+@app.route('/help/')
+def render_help():
+    return render_template('help.html')
 
 @app.route('/') 
 def session():
@@ -37,14 +41,14 @@ def event_handler(json, methods=['GET', 'POST']):
             json_r = run(u,px,px2,py,m)
             
         except Exception as e:
-            error(traceback.format_exc())
+            print(traceback.format_exc())
 
         if json_r is None:
             json_r = {'error':-1}
         elif json_r == 1:
             json_r = {'error':1}
             
-        socketio.emit('displayGraphs', json_r, callback=myCallback)
+        emit('displayGraphs', json_r, callback=myCallback)
 
 @socketio.on('demandCurve')
 def event_handler(json, methods=['GET','POST']):
@@ -59,7 +63,7 @@ def event_handler(json, methods=['GET','POST']):
             error(traceback.format_exc())
 
         print('json:',json_r)
-        socketio.emit('displayDemand', json_r, callback=myCallback)
+        emit('displayDemand', json_r, callback=myCallback)
 
 
 if __name__=="__main__":

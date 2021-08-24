@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
+	html { scroll-behavior: smooth; }
+
       html, body {
          height: 100vh;
       }
@@ -139,8 +141,8 @@
       <form action="" method="POST">
           <div id="formDiv">
             <input type="text" class="f" placeholder="utility" required/>
-            <input type="number" class="py" placeholder="py" required/>
-            <input type="number" class="m" placeholder="income" required/>
+            <input type="number" step="any" class="py" placeholder="py" required/>
+            <input type="number" step="any" class="m" placeholder="income" required/>
             <input type="submit" id="submitButton" value="graph"/>
           </div>
       </form>
@@ -206,7 +208,7 @@
 
 <script>
 
-  var socket = io.connect('http://' + document.domain + ':' + location.port),
+  var socket = io.connect('https://' + document.domain),
       calculator,
       m,
       py
