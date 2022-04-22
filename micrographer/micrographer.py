@@ -1,5 +1,10 @@
 import re, math
 import sympy as sp
+from typing import TypedDict
+
+class XYDict:
+    x: str
+    y: str
 
 variables = "xy"
 x,y,M,C,U,PX = sp.symbols('x y m c u px',nonnegative=True, real=True)
@@ -11,9 +16,9 @@ class MinMaxError(Exception):
         return 'Invalid min or max function'
     
 
-def parseExpression(s: str, evaluate=True)->sp.expr:
+def parseExpression(s: str, evaluate=True):
     #evaluate param so that I can leave 2 as 2 instead of 2.0, etc
-
+    
     varGroup = "(:?{})".format("|".join(variables))
     digitGroup = "(:?\\d|\\.)"
     # sp will evaluate if the number of decimal points
@@ -58,7 +63,7 @@ def parseExpression(s: str, evaluate=True)->sp.expr:
     ret = sp.sympify(s,locals={'x':x,'y':y})
     return ret.evalf() if evaluate else ret
 
-def getFunctionType(exp: sp.expr)->str:
+def getFunctionType(exp)->str:
     numberPattern  = "(?:-?(?:\\d+|\\.\\d+|\\d+\\.\\d+))"
     
     polynomialPattern = "({}\\*)?x(?:\\*\\*({}))?([\\+\\*])({}\\*)?y(?:\\*\\*({}))?".format(*((numberPattern,)*4))
@@ -123,7 +128,7 @@ def getMultiVariableSolve(funcs, subs, *varis)->sp.expr:
     return None
 '''
 
-def getSolve(funcs: 'list[sp.exp] or sp.exp', *varis)->sp.expr:
+def getSolve(funcs: 'list[sp.exp] or sp.exp', *varis):
     #sympy is terrible
     
     solve = sp.solve(funcs,*varis)
@@ -158,7 +163,7 @@ def isMinMax(exp)->bool:
             return weirdF
     return None
 
-def getMinMaxTanCond(exp)->sp.expr:
+def getMinMaxTanCond(exp):
     assert(isMinMax(exp))
     args = tuple(exp._argset)
     return (args[0]-args[1]).evalf()
@@ -166,7 +171,7 @@ def getMinMaxTanCond(exp)->sp.expr:
 
 class Bundle:
 
-    def __init__(self,exp: sp.expr, px: int, py: int, m:int):
+    def __init__(self, exp, px: int, py: int, m:int):
         self.px, self.py, self.m, self.exp = px, py, m, exp
         self.bl = (px*x+py*y-m).evalf()
         self.uCurve = self.getUCurve()
@@ -211,17 +216,17 @@ class UtilityCurve:
         self.isEdgeCase = False
 
     # func prototype
-    def getTanCond(self)->sp.expr:
+    def getTanCond(self):
         pass
 
     # func prototype
-    def getPoint(self)->'{x:<>,y:<>}':
+    def getPoint(self)->XYDict:
         pass
     
     def getUtility(self,simplify=False)->float:
         return self.bundle.exp.evalf(subs=self.getPoint())
 
-    def getCurve(self)->sp.expr:
+    def getCurve(self):
         return (self.bundle.exp-self.getUtility()).evalf()
 
 class TangentUtility(UtilityCurve):
@@ -231,7 +236,7 @@ class TangentUtility(UtilityCurve):
         mux,muy = sp.diff(bundle.exp,x), sp.diff(bundle.exp,y)
 
     #@Override
-    def getTanCond(self)->sp.expr:
+    def getTanCond(self):
         mux,muy = (sp.diff(self.bundle.exp,var) for var in (x,y))
         mrs = mux/muy
         #pRatio = self.bundle.px/self.bundle.py
@@ -240,7 +245,7 @@ class TangentUtility(UtilityCurve):
         return (mrs-pRatio).evalf()
 
     #@Override
-    def getPoint(self)->'{x:<>,y:<>}':
+    def getPoint(self)->XYDict:
         return getSolve([self.getTanCond(),self.bundle.bl])
 
 class MinMaxUtility(TangentUtility):
@@ -252,7 +257,7 @@ class MinMaxUtility(TangentUtility):
         self.left, self.right = tuple(bundle.exp._argset)
 
     #@Override
-    def getTanCond(self)->sp.expr:
+    def getTanCond(self):
         return (self.left-self.right).evalf()
 
 class EdgeCaseUtility(UtilityCurve):
@@ -262,7 +267,7 @@ class EdgeCaseUtility(UtilityCurve):
         self.zeroVariable = zeroVariable
 
     #@Override
-    def getPoint(self)->'{x:<>,y:<>}':
+    def getPoint(self)->XYDict:
         otherVariable = x if self.zeroVariable==y else y
         blWithoutZero = self.bundle.bl.subs(self.zeroVariable,0)
         otherVariableSol = getSolve(blWithoutZero,otherVariable)

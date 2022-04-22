@@ -3,10 +3,9 @@
   <head>
     <title>Micrographer</title>
     <script src="https://www.desmos.com/api/v1.3/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8"/> <!-- firefox throws an error without this -->
-
-    <link rel="stylesheet" type="text/css" href="../static/index_css.css">
+    <link rel="stylesheet" type="text/css" href="static/index_css.css">
     <link href="https://fonts.googleapis.com/css?family=Raleway:300&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lato:300&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Noto+Sans+HK&display=swap" rel="stylesheet">
@@ -20,17 +19,18 @@
     	<button id='helpbtn' onclick="openHelp()">?</button>
     	<p> help </p>
     </div>
-    <form id="myForm" method="POST">
+    <br>
+      <form id="myForm" method="POST">
         <h4>utility function</h4>
-        <input type="text" class="u" placeholder="utility func" autofocus required/>
+        <input type="text" class="u" placeholder="utility func" pattern="[0-9.xy+-/*^minmax(,) ]+" title="function (e.g. 2x+y^(1/4), min(2x+y,2y+x))" autofocus required/>
         <h4>px</h4>
-        <input type="text" class="px_1" placeholder="px period 1" pattern="[xy\d.*/^+-]+" required/>
+        <input type="text" class="px_1" placeholder="px period 1" pattern="[0-9.x+-/*^]+" title required/>
         <h4>px'</h4>
-        <input type="text" class="px_2" placeholder="px period 2" pattern="[xy\d.*/^+-]+" required/>
+        <input type="text" class="px_2" placeholder="px period 2" required/>
         <h4>py</h4>
-        <input type="text" class="py" placeholder="py" pattern="[xy\d.*/^+-]+" required/>
+        <input type="text" class="py" placeholder="py" required/>
         <h4>income</h4>
-        <input type="number" step="any" class="m" placeholder="income" min="0" required/>
+        <input type="number" class="m" placeholder="income" required/>
         <br><br>
         <label><input type="checkbox" id="enableAnimations" value="false"/>enable animations?</label>
         <br>
@@ -38,7 +38,6 @@
         <br>
         <br>
         <input type="submit" id="submitButton" value="graph"/>
-        <p style='font-size: 0.75em'> This app does not collect any data. </p>
       </form>
   </div>
 
@@ -88,7 +87,7 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
-<script src="../static/index_js.js"></script>
+<script src="static/index_js.js"></script>
 <!--<link href="https://fonts.googleapis.com/css?family=Questrial&display=swap" rel="stylesheet">-->
 
 <script type="text/x-mathjax-config">

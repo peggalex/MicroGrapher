@@ -12,18 +12,12 @@
 
       .sidebar {
         flex-shrink: 0;
-        width: 0em;
+        width: 0;
         background-color: #FFFFFF;
-        overflow: hidden;
-        transition: width 0.5s, opacity 0.5s;
+        overflow-x: hidden;
+        transition: 0.5s;
         border-right: 1px solid;
         border-color: #add8e6;
-        opacity: 0%;
-      }
-
-      .sidebar.open {
-        width: 13em !important;
-        opacity: 100%;
       }
 
       .sidebar a {
@@ -108,7 +102,7 @@
 
       #topRightButtons {
       	display: flex;
-      	flex-direction: row;
+      	flex-direction: column;
       	margin-left: auto;
       	justify-content: center;
       }
@@ -141,7 +135,7 @@
       	display:flex;
       	flex-direction: column;
       	align-items: center;
-      	overflow-y: scroll;
+      	overflow: scroll;
       }
 
 
@@ -239,7 +233,7 @@
       
       #demandCurveButton:hover{ background-color: #fbf6f8; }
 
-    .loader {
+      .loader {
 		  border: 5px solid #f3f3f3;
 		  border-top: 5px solid #add8e6; 
 		  border-radius: 50%;
@@ -255,12 +249,7 @@
       align-items: center;
       height: 100%;
     }
-
-	  @keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
-	  }
-
+  
     #helpbtn{
       font-size: 1em;
       border-radius: 100%;
@@ -274,11 +263,7 @@
       align-items: center;
     }
 
-    #footer {
-      position: relative;
-      bottom: 0px;
-    }
-
-    #footer > p {
-      white-space: normal;
-    }
+	  @keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	  }

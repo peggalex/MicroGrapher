@@ -45,7 +45,7 @@ def formatCond(minX,maxX,f,var)->dict:
         cond+=' \\leq '+getFormattedX(maxX)
     return {'func':func,'cond':cond}
 
-def getConds(minX: float, maxX: float, f: sp.expr, var='x')->list:
+def getConds(minX: float, maxX: float, f, var='x')->list:
     return [getLatexCond(minX,maxX,f,'x' if var=='x' else 'y'),formatCond(minX,maxX,f,var)]
 
 getLatexZeroX = lambda minPx: getConds(minPx,None,0,'px')
@@ -127,7 +127,7 @@ def getDemandCurveMin(f: sp.Min, py, m)->dict:
     axis_max = max(x for x in (maxP,maxX,xInter) if not (x in (float('inf'),None)))
     return {'latexs':ret, 'axis_max':str(axis_max)}
 
-def getDemandCurvePoly(f: sp.expr, py,m):
+def getDemandCurvePoly(f, py,m):
     mux,muy = (sp.diff(f,v) for v in (x,y))
     xInter = None
     yInter = None
@@ -162,7 +162,7 @@ def getDemandCurvePoly(f: sp.expr, py,m):
     axis_max = str(max((i for i in (xInter,yInter) if i))) if any((xInter,yInter)) else None 
     return {'latexs':ret, 'axis_max':axis_max}
 
-def getDemandCurveLin(f: sp.expr, py, m):
+def getDemandCurveLin(f, py, m):
     ret = []
     pRatio = getSolve(f,y).collect(x).coeff(x)*-1
     _u = getUParallel(pRatio, f, py, m)
